@@ -1,4 +1,4 @@
-import { CounterView } from "~/views/CounterView"
+import { CounterView } from "~/views/CounterView/index"
 
 export default function Counter() {
   return (

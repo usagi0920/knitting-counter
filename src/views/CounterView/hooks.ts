@@ -1,54 +1,96 @@
 import { useEffect, useState } from "react"
 
 export function useCounter() {
-  const [count, setCount] = useState(0)
-  const [target, setTarget] = useState(0)
 
-  // 初回読み込み
-  useEffect(() => {
-    const savedCount = localStorage.getItem("count")
-    const savedTarget = localStorage.getItem("target")
+    const [counters, setCounters] = useState([
+  { id: 1, name: "カウンター1", count: 0, target: 0 }
+])
 
-    if (savedCount !== null) setCount(Number(savedCount))
-    if (savedTarget !== null) setTarget(Number(savedTarget))
-  }, [])
+  // 読み込み
+useEffect(() => {
+  const saved = localStorage.getItem("counters")
+  if (saved) setCounters(JSON.parse(saved))
+}, [])
 
-  // 保存
-  useEffect(() => {
-    localStorage.setItem("count", String(count))
-    localStorage.setItem("target", String(target))
-  }, [count, target])
+// 保存
+useEffect(() => {
+  localStorage.setItem("counters", JSON.stringify(counters))
+}, [counters])
 
-  const handlePlus = () => {
-    if (target > 0 && count >= target) return
-    setCount(count + 1)
+const handlePlus = (id: number) => {
+  setCounters((prev) =>
+    prev.map((c) =>
+      c.id === id
+        ? { ...c, count: c.count + 1 }
+        : c
+    )
+  )
+}
+
+  const handleMinus = (id: number) => {
+    setCounters((prev) =>
+      prev.map((c) =>
+        c.id === id && c.count > 0
+          ? { ...c, count: c.count - 1 }
+          : c
+      )
+    )
   }
 
-  const handleMinus = () => {
-    if (count <= 0) return
-    setCount(count - 1)
+  const handleClear = (id: number) => {
+    setCounters((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, count: 0 }
+          : c
+      )
+    )
   }
 
-  const handleClear = () => {
-    setCount(0)
-  }
+ const handleSetTarget = (id: number, value: number) => {
+  setCounters(prev =>
+    prev.map(c =>
+      c.id === id ? { ...c, target: value } : c
+    )
+  )
+ }
 
-  const handleClearTarget = () => {
-    setTarget(0)
-  }
+ const handleAddCounter = () => {
+  setCounters(prev => [
+    ...prev,
+    {
+      id: Date.now(),
+      name: `カウンター${prev.length + 1}`,
+      count: 0,
+      target: 0
+    }
+  ])
+}
 
-  const remainNumber = target - count
-  const progress = target > 0 ? Math.min((count / target) * 100, 100) : 0
+const handleChangeName = (id: number, name: string) => {
+  setCounters(prev =>
+    prev.map(c =>
+      c.id === id
+        ? { ...c, name }
+        : c
+    )
+  )
+}
+
+const handleRemoveCounter = (id: number) => {
+  setCounters(prev => prev.filter(c => c.id !== id))
+}
+
 
   return {
-    count,
-    target,
-    setTarget,
+    counters,
     handlePlus,
     handleMinus,
     handleClear,
-    handleClearTarget,
-    remainNumber,
-    progress,
+    handleSetTarget,
+    setCounters,
+    handleAddCounter,
+    handleChangeName,
+    handleRemoveCounter,
   }
 }
